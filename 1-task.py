@@ -46,6 +46,17 @@
 # ○ Для файлов сохраните его размер в байтах, а для директорий размер файлов в ней
 #   с учётом всех вложенных файлов и директорий.
 # 📌 Соберите из созданных на уроке и в рамках домашнего задания функций пакет для работы с файлами разных форматов.
+
+# Ожидаемый ответ:
+#
+# [{'Path': 'geekbrains/california_housing_train.csv', 'Type': 'File', 'Size': 1457}, {'Path': 'geekbrains/student_performance.txt', 'Type': 'File', 'Size': 21}, {'Path': 'geekbrains/covid.json', 'Type': 'File', 'Size': 35228079}, {'Path': 'geekbrains/input2.txt', 'Type': 'File', 'Size': 9}, {'Path': 'geekbrains/avg_list.txt', 'Type': 'File', 'Size': 21}, {'Path': 'geekbrains/age_report.csv', 'Type': 'File', 'Size': 85}, {'Path': 'geekbrains/my_ds_projects', 'Type': 'Directory', 'Size': 171}, {'Path': 'geekbrains/my_ds_projects/My-code', 'Type': 'Directory', 'Size': 171}, {'Path': 'geekbrains/my_ds_projects/My-code/GB_data', 'Type': 'Directory', 'Size': 171}, {'Path': 'geekbrains/my_ds_projects/My-code/GB_data/fruits.csv', 'Type': 'File', 'Size': 101}, {'Path': 'geekbrains/my_ds_projects/My-code/GB_data/list_of_names.txt', 'Type': 'File', 'Size': 70}]
+#
+# Ваш ответ:
+#
+# [{'Path': 'geekbrains/california_housing_train.csv', 'Type': 'File', 'Size': 1457}, {'Path': 'geekbrains/student_performance.txt', 'Type': 'File', 'Size': 21}, {'Path': 'geekbrains/my_ds_projects', 'Type': 'Directory', 'Size': 171}, {'Path': 'geekbrains/covid.json', 'Type': 'File', 'Size': 35228079}, {'Path': 'geekbrains/input2.txt', 'Type': 'File', 'Size': 9}, {'Path': 'geekbrains/avg_list.txt', 'Type': 'File', 'Size': 21}, {'Path': 'geekbrains/age_report.csv', 'Type': 'File', 'Size': 85}, {'Path': 'my_ds_projects/My-code', 'Type': 'Directory', 'Size': 171}, {'Path': 'My-code/GB_data', 'Type': 'Directory', 'Size': 171}, {'Path': 'GB_data/fruits.csv', 'Type': 'File', 'Size': 101}, {'Path': 'GB_data/list_of_names.txt', 'Type': 'File', 'Size': 70}]
+#
+
+
 import csv
 import json
 import os
@@ -65,7 +76,9 @@ def traverse_directory(path):
     directory = list()
     for file in files.rglob('*'):
         files_dict = dict()
-        abs_path = os.path.join(path, file.name)  # parent directory
+        basename = os.path.basename(file)  # parent directory
+        parent_name = file.parent.name  # get tail from path
+        parent_file_name = os.path.join(parent_name, basename)  # parent directory
         is_dir = os.path.isdir(file)
         type_of_file: str = TYPE_FILE
         size: int = int()
@@ -77,35 +90,35 @@ def traverse_directory(path):
             type_of_file = TYPE_DIRECTORY
         else:
             size = os.path.getsize(file)
-        files_dict[PATH] = abs_path
+        files_dict[PATH] = parent_file_name
         files_dict[TYPE] = type_of_file
         files_dict[SIZE] = size
         directory.append(files_dict)
     return directory
 
 
-def save_results_to_json(directories):
-    with (open('directory_content.json', 'w', encoding='utf-8') as f_json):
-        json.dump(directories, f_json, ensure_ascii=False, indent=2)
+def save_results_to_json(directories, file_name=None):
+    f_json = open(file_name, 'w', encoding='utf-8')
+    json.dump(directories, f_json, ensure_ascii=False, indent=2)
 
 
-def save_results_to_csv(directories):
-    with (open('directory_content.csv', 'w', newline='', encoding='utf-8') as f_csv):
-        csv_writer = csv.writer(f_csv, dialect='excel', delimiter=';')
-        for index, f_item in enumerate(directories):
-            if index == 0:
-                head = list(f_item.keys())
-                csv_writer.writerow(head)
-            csv_writer.writerow([f_item[PATH], f_item[TYPE], f_item[SIZE]])
+def save_results_to_csv(directories, file_name=None):
+    f_csv = open(file_name, 'w', newline='', encoding='utf-8')
+    csv_writer = csv.writer(f_csv, dialect='excel', delimiter=';')
+    for index, f_item in enumerate(directories):
+        if index == 0:
+            head = list(f_item.keys())
+            csv_writer.writerow(head)
+        csv_writer.writerow([f_item[PATH], f_item[TYPE], f_item[SIZE]])
 
 
-def save_results_to_pickle(directories):
-    with (open('directory_content.pickle', 'wb') as f_pickle):
-        pickle.dump(directories, f_pickle)
+def save_results_to_pickle(directories, file_name=None):
+    f_pickle = open(file_name, 'wb')
+    pickle.dump(directories, f_pickle)
 
 
-path_to_directorie = '/Users/ainurshamsutdinov/Projects/geekbrains/advanced_python/8-seminar-advanced-python/'
+path_to_directorie = os.getcwd()
 directories = traverse_directory(path_to_directorie)
-save_results_to_json(directories)
-save_results_to_csv(directories)
-save_results_to_pickle(directories)
+save_results_to_json(directories, 'directories-JSON.json')
+save_results_to_csv(directories, 'directories-CSV.csv')
+save_results_to_pickle(directories, 'directories-PICKLE.pickle')
